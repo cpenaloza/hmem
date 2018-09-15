@@ -1,0 +1,94 @@
+# Plot the data
+ggplot(data = studentData, aes(x = housepov, y = mathgain)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+# Fit a linear model
+summary(lm(mathgain ~ housepov , data =  studentData))
+#
+###
+#
+# First, plot the housepov and mathgain at the classroom-level from the classData data.frame
+ggplot(data = classData, aes(x = housepov, y = mathgain)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+# Second, plot the housepov and mathgain at the school-level from the schoolData data.frame
+ggplot(data = schoolData, aes(x = housepov, y = mathgain)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+# Third, compare your linear regression results from the previous expercise to the two new models
+summary(lm(mathgain ~ housepov, data = studentData)) ## student-level data
+summary(lm(mathgain ~ housepov, data = classData)) ## class-level data
+summary(lm(mathgain ~ housepov, data = schoolData)) ## school-level data
+#
+###
+#
+# First, plot the housepov and mathgain at the classroom-level from the classData data.frame
+ggplot(data = classData, aes(x = housepov, y = mathgain)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+# Second, plot the housepov and mathgain at the school-level from the schoolData data.frame
+ggplot(data = schoolData, aes(x = housepov, y = mathgain)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+# Third, compare your linear regression results from the previous expercise to the two new models
+summary(lm(mathgain ~ housepov, data = studentData)) ## student-level data
+summary(lm(mathgain ~ housepov, data = classData)) ## class-level data
+summary(lm(mathgain ~ housepov, data = schoolData)) ## school-level data
+#
+###
+#
+# First, run a model without considering different intercept for each group
+out1 <- lm(response ~ x, multIntDemo)
+summary(out1)
+plot_output1(out1)
+
+# Considering same slope but different intercepts, the random-effect should be the second on the right hand side
+out2 <- lm(response ~ x + group - 1, multIntDemo)
+summary(out2)
+plot_output2(out2)
+
+# Considering different slope and intercept for each group (i.e., an interaction), the random-effect should be the second on the right hand side
+out3 <- lm(response ~ x + group - 1 + x:group, multIntDemo)
+summary(out3)
+plot_output3(out3)
+#
+###
+#
+library(lme4)
+# Run model
+outLmer <- lmer(response ~ x + (1|group), multIntDemo)
+
+# Look at model outputs 
+summary(outLmer)
+tidy(outLmer)
+
+# Extract predictor variables and plot
+extractAndPlotOutput(outLmer)
+#
+###
+#
+# Random effect slopes
+outLmer2 <- lmer(response ~ (x|group), multIntDemo)   #(continuous_predictor|random_effect_group)
+summary(outLmer2)
+tidy(outLmer2)
+
+# Extract and plot
+plotOutput(outLmer2)
+#
+###
+#
+# Mixed effect model
+# How is mathgain affected by the sex of the student, the teachers' years of math preparation (mathprep), and the teachers' math knowledge (mathknow). Classroom Id and School id are modeled as random effects. 
+lmerModel <- lmer(mathgain~ sex + 
+                  mathprep + mathknow + (1|classid) +
+                  (1|schoolid), data = studentData, na.action = "na.omit",
+                  REML = TRUE)
+summary(lmerModel)
+
+# Extract and plot 
+extractAndPlot(lmerModel)
