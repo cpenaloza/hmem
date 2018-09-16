@@ -1,0 +1,72 @@
+#
+##
+###
+# Run a standard, non-paired t-test
+t.test(y[treat == "before"], y[treat == "after"], paired = F)
+
+# Run a standard, paired t-test
+t.test(y[treat == "before"], y[treat == "after"], paired = T)
+#
+##
+###
+library(lmerTest)
+# Run the paired-test like before
+t.test(y[treat == "before"], y[treat == "after"], paired = T)
+
+# Run a repeated-measures ANOVA
+# treat is the fixed effect and x is the random intercept
+anova(lmer(y ~ treat + (1|x)))
+#
+##
+###
+# Plot the data
+ggplot(data = sleepstudy) +
+    geom_line(aes(x = Days, y = Reaction, group = Subject)) +
+    stat_smooth(aes(x = Days, y = Reaction),
+                method = 'lm', size = 3, se = FALSE)
+#
+##
+###
+# Build a lm 
+lm(Reaction ~ Days, data = sleepstudy)
+# Build a lmer
+lmer(Reaction ~ Days + (1 | Subject), data = sleepstudy)
+#
+##
+###
+# Run an anova
+anova(lmerOut)
+# Look at the regression coefficients
+summary(lmerOut)
+#
+##
+###
+#plot hate crimes in NY by Year, grouped by County
+ggplot(data = hate, aes(x = Year, y = TotalIncidents, group = County)) +
+    geom_line() + geom_smooth(method = 'lm', se = FALSE)
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# glmer with raw Year
+glmer(TotalIncidents ~ Year + (Year|County),
+               data = hate, family = "poisson")
+               
+# glmer with scaled Year, Year2
+glmerOut <- glmer(TotalIncidents ~ Year2 + (Year2|County),
+                  data = hate, family = "poisson")
+summary(glmerOut)
+#
+##
+###
+# Extract and manipulate data
+countyTrend <- ranef(glmerOut)$County
+countyTrend$county <- factor(row.names(countyTrend), levels = row.names(countyTrend)[order(countyTrend$Year2)])
+
+# Plot results 
+ggplot(data = countyTrend, aes(x = county, y = Year2)) + geom_point() +
+    coord_flip() + ylab("Change in hate crimes per year")  +
+    xlab("County")
+    
