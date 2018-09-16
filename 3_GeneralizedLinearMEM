@@ -58,3 +58,54 @@ summary(lmer(Purchases/(Purchases + Pass) ~ friend + ranking + (1 | city), data 
 summary(modelOut) 
 exp(fixef(modelOut)[2])
 exp(confint(modelOut)[3,])
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# Fit a Poisson glmer
+summary(glmer(clicks ~ webpage + (1 | group), family = 'poisson', data = userGroups))
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# Age goes before year
+# Age and year as fixed effects, then year as a random effect of county
+modelOut <- glmer(count ~ age + year + (year|county), family = 'poisson',
+                  data = ILdata)
+summary(modelOut)
+#
+##
+###
+# Extract out fixed effects
+fixef(modelOut)
+# Extract out random effects 
+ranef(modelOut)
+
+# Run code to see one method for plotting the data
+ggplot(data = ILdata2, aes(x = year, y = count, group = county)) +
+    geom_line() +
+    facet_grid(age ~ .) +
+    stat_smooth(method = 'glm',
+                method.args = list(family = "poisson"), se = FALSE,
+                alpha = 0.5) +
+    theme_minimal()
+#
+##
+###
+    # Extract out fixed effects
+fixef(modelOut)
+# Extract out random effects 
+ranef(modelOut)
+
+# Run code to see one method for plotting the data
+ggplot(data = ILdata2, aes(x = year, y = count, group = county)) +
+    geom_line() +
+    facet_grid(age ~ . ) +
+    stat_smooth(method = 'glm',
+                method.args = list(family = "poisson"), se = FALSE,
+                alpha = 0.5) +
+    theme_minimal()
