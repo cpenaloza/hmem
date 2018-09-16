@@ -1,0 +1,104 @@
+library(lme4)
+#
+# First, build a lmer with state as a random effect. Then look at the model's summary and the plot of residuals. 
+birthRateStateModel <- lmer(BirthRate ~ (1|State), data =countyBirthsData)
+summary(birthRateStateModel)
+plot(birthRateStateModel)
+
+# Next, plot the predicted values from the model on top of the plot shown during the video.
+countyBirthsData$birthPredictState <-  predict(birthRateStateModel, countyBirthsData)
+ggplot() + theme_minimal() +
+    geom_point(data =countyBirthsData,
+               aes(x = TotalPopulation, y = BirthRate)) + 
+        geom_point(data = countyBirthsData,
+                   aes(x = TotalPopulation, y = birthPredictState),
+                   color = 'blue', alpha = 0.5)
+#
+##
+###
+# Include the AverageAgeofMother as a fixed effect within the lmer and state as a random effect
+ageMotherModel <- lmer(BirthRate ~ AverageAgeofMother + (1|State),
+                       countyBirthsData)
+summary(ageMotherModel)
+
+# Compare the random-effect model to the linear effect model 
+summary(lm(BirthRate ~ AverageAgeofMother, data = countyBirthsData))
+#
+##
+###
+# Include the AverageAgeofMother as a correlated random-effect slope parameter
+ageMotherModelRandomCorrelated <- lmer(BirthRate ~ AverageAgeofMother +  (AverageAgeofMother | State),
+                       countyBirthsData)
+summary(ageMotherModelRandomCorrelated)
+#
+##
+###
+# Include the AverageAgeofMother as an uncorrelated random-effect slope parameter
+ageMotherModelRandomUncorrelated <- lmer(BirthRate ~ AverageAgeofMother + (AverageAgeofMother || State),
+                       countyBirthsData)
+summary(ageMotherModelRandomUncorrelated)
+#
+##
+###
+# Extract the fixed-effect coefficients
+fixef(out)
+
+# Extract the random-effect coefficients
+ranef(out)
+
+# Estimate the confidence intervals 
+confint(out)
+#
+##
+###
+# Extract out the parameter estimates and confidence intervals and manipulate the data
+dataPlot <- data.frame(cbind(fixef(out), confint(out)[3:4,]))
+rownames(dataPlot)[1] <- "Intercept"
+colnames(dataPlot) <- c("mean", "l95", "u95")
+dataPlot$parameter <- rownames(dataPlot)
+
+# Print the new dataframe
+print(dataPlot)
+
+# Plot the results using ggplot2
+ggplot(dataPlot, aes(x = parameter, y = mean,
+                     ymin = l95, ymax = u95)) +
+    geom_hline( yintercept = 0, color = 'red' ) +
+    geom_linerange() + geom_point() + coord_flip() + theme_minimal()
+#
+##
+###
+#plot the change in crime through time by County
+plot1 <- ggplot(data = MDcrime, aes(x = Year, y = Crime, group = County)) +
+    geom_line() + 
+    theme_minimal() +
+    ylab("Major crimes reported per county")
+print(plot1)
+
+#add the trend line for each county
+plot1 + geom_smooth(method = "lm", se = F)
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# Fit the model with Year as both a fixed and random-effect
+lmer(Crime ~ Year + (1 + Year | County) , data = MDCrime)
+
+# Fit the model with Year2 rather than Year
+out <- lmer(Crime ~ Year2 + (1 + Year2 | County) , data = MDCrime)
+
+# Examine the model's output
+summary(out)
+#
+##
+###
+## Build the Null model with only County as a random-effect
+null_model <- lmer(Crime ~ (1 | County) , data = MDCrime)
+
+## Build the Year2 model with Year2 as a fixed and random slope and County as the random-effect
+year_model <- lmer(Crime ~ Year2 + (1 + Year2 | County) , data = MDCrime)
+
+## Compare the two models using an anova
+anova(null_model, year_model)
