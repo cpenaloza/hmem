@@ -1,1 +1,60 @@
+# Fit a glm using data in a long format
+fitLong <- glm(mortality ~ dose, data = dfLong, family = "binomial")
+summary(fitLong)
 
+# Fit a glm using data in a short format with two columns
+fitShort <- glm(cbind(mortality, survival) ~ dose, data = dfShort, family = "binomial")
+summary(fitShort)
+
+# Fit a glm using data in a short format with weights
+fitShortP <- glm(mortalityP ~ dose, data = dfShort, weights = nReps, family = "binomial")
+summary(fitShortP)
+#
+##
+###
+# Fit the linear model
+summary(lm(y ~ x))
+
+# Fit the generalized linear model
+summary(glm(y ~ x, family = "poisson"))
+#
+##
+###
+# Plot the data using jittered points and the default stat_smooth
+ggplot(data = dfLong, aes(x = dose, y = mortality)) + 
+	geom_jitter(height = 0.05, width = 0.1) +
+	stat_smooth(fill = 'pink', color = 'red') 
+				
+# Plot the data using jittered points and the the glm stat_smooth
+ggplot(data = dfLong, aes(x = dose, y = mortality)) + 
+	geom_jitter(height = 0.05, width = 0.1) +
+	stat_smooth(method = 'glm',  
+				method.args = list(family = "binomial"))
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# Fit glmerOut and look at its summary
+glmerOut <- glmer(mortality ~ dose + (1 | replicate), family = 'binomial', data = df)
+summary(glmerOut)
+#
+##
+###
+# Load lmerTest
+library(lmerTest)
+
+# Fit the model and look at its summary 
+modelOut <- glmer(cbind(Purchases, Pass) ~ friend + ranking + (1 | city), data = allData, family = 'binomial')
+summary(modelOut) 
+
+# Compare outputs to a lmer model
+summary(lmer(Purchases/(Purchases + Pass) ~ friend + ranking + (1 | city), data = allData))
+#
+##
+###
+# Run the code to see how to calculate odds ratios
+summary(modelOut) 
+exp(fixef(modelOut)[2])
+exp(confint(modelOut)[3,])
